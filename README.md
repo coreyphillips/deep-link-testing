@@ -1,6 +1,6 @@
 # Deeplink Testing Tool
 
-A simple yet powerful tool for testing deeplinks across devices during development and QA.
+A simple tool for testing deeplinks across devices during development and QA.
 
 ## Overview
 
@@ -24,20 +24,16 @@ Try the tool now: [Deeplink Testing Tool Demo](https://htmlpreview.github.io/?ht
 
 ## Setup Instructions
 
-### Option 1: Using the Enhanced Python Server (Recommended)
+### Option 1: Using the Python Server (Recommended)
 
 For the easiest setup with automatic IP detection and display:
 
 1. Save both the `deeplink-testing.html` and `server.py` files to the same folder
-2. Make the server script executable (on Mac/Linux):
-   ```
-   chmod +x server.py
-   ```
-3. Run the server:
+2. Run the server:
    ```
    python server.py
    ```
-4. The server will:
+3. The server will:
     - Start automatically on port 8000 (or specify a different port: `python server.py 8080`)
     - Display your network IP address prominently
     - Open a browser with the deeplink tester
