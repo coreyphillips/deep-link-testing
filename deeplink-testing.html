@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deeplink Testing Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #linkContainer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .test-link {
+            display: block;
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+        .history {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .network-info {
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .network-info code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .copy-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-button:hover {
+            background-color: #0b7dda;
+        }
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-button:hover {
+            background-color: #d32f2f;
+        }
+        .qr-container {
+            margin-top: 15px;
+            text-align: center;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .qr-container canvas {
+            max-width: 180px;
+            height: auto;
+        }
+        .history-item {
+            background-color: #fff;
+        }
+        .history-controls {
+            display: flex;
+            margin-top: 10px;
+            gap: 10px;
+        }
+        .clear-all-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .clear-all-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+    <!-- Add QRious library for generating QR codes locally -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body>
+<h1>Deeplink Testing Tool</h1>
+
+<div class="network-info" id="networkInfo">
+    <h3>Network Access Information</h3>
+    <p id="serverMsg">This tool has been enhanced with server IP information.</p>
+    <div id="ipAddresses"></div>
+    <div id="qrCode" class="qr-container"></div>
+</div>
+
+<div class="container">
+    <h2>Create a Test Link</h2>
+    <input type="text" id="deeplinkInput" placeholder="Paste your deeplink here (e.g., myapp://path/to/screen)">
+    <button onclick="createTestLink()">Create Test Link</button>
+
+    <div id="linkContainer"></div>
+    <div id="qrContainer" class="qr-container" style="display: none;"></div>
+</div>
+
+<div class="container">
+    <h2>Recent Links</h2>
+    <div class="history-controls">
+        <button class="clear-all-button" onclick="clearAllHistory()">Clear All History</button>
+    </div>
+    <div id="history" class="history"></div>
+</div>
+
+<script>
+    // Load history from localStorage
+    let linkHistory = JSON.parse(localStorage.getItem('deeplinkHistory')) || [];
+
+    // Display history and network info on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateHistory();
+        setupNetworkInfo();
+    });
+
+    // Function to generate QR code locally using QRious
+    function generateQRCode(container, text, size = 300) {
+        // Clear any existing content
+        container.innerHTML = '';
+
+        // Create canvas element for QR code
+        const canvas = document.createElement('canvas');
+        container.appendChild(canvas);
+
+        // Generate QR code
+        new QRious({
+            element: canvas,
+            value: text,
+            size: size,
+            backgroundAlpha: 1,
+            foreground: '#000000',
+            background: '#ffffff',
+            level: 'H' // Error correction level (L, M, Q, H)
+        });
+
+        return canvas;
+    }
+
+    // Function to set up network information
+    function setupNetworkInfo() {
+        const ipAddressesDiv = document.getElementById('ipAddresses');
+        const qrCodeDiv = document.getElementById('qrCode');
+        const serverMsgDiv = document.getElementById('serverMsg');
+
+        // Check if server provided network info
+        if (window.SERVER_INFO) {
+            // We have server-injected information
+            const port = window.SERVER_INFO.port;
+            const path = window.location.pathname;
+            const networkIp = window.SERVER_INFO.networkIp;
+
+            // Display server-provided information
+            serverMsgDiv.innerHTML = `
+                <strong>[OK] Connected to server:</strong> Your network IP has been detected.
+                <br>Share the URL below with devices on your network:
+            `;
+
+            // Create network URL display
+            const networkUrl = `http://${networkIp}:${port}${path}`;
+            ipAddressesDiv.innerHTML = `
+                <div style="margin: 15px 0; padding: 10px; background-color: #f8f8f8; border-radius: 4px; text-align: center;">
+                    <code style="font-size: 16px; font-weight: bold;">${networkUrl}</code>
+                    <button class="copy-button" onclick="copyToClipboard('${networkUrl}')">Copy</button>
+                </div>
+            `;
+
+            // Display QR code
+            qrCodeDiv.innerHTML = '<h4>Scan to open on mobile:</h4>';
+            generateQRCode(qrCodeDiv, networkUrl, 300);
+        } else {
+            // No server info, fall back to manual method
+            serverMsgDiv.innerHTML = `
+                <strong>[INFO] Connected in browser mode:</strong> For better network detection, use the included server.py script.
+            `;
+
+            // Build manual IP entry form
+            ipAddressesDiv.innerHTML = `
+                <div style="margin: 15px 0; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+                    <p><strong>Enter your local IP address manually:</strong> (e.g., 192.168.50.181)</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="manualIpInput" placeholder="e.g., 192.168.50.181" style="flex-grow: 1;">
+                        <button onclick="addManualIp()">Add</button>
+                    </div>
+                    <div id="manualIps" style="margin-top: 10px;"></div>
+                    <p style="font-size: 12px; margin-top: 5px;">Tip: Find your IP with <code>ifconfig | grep inet</code> on Mac/Linux or <code>ipconfig</code> on Windows</p>
+                </div>
+            `;
+
+            // Hide QR code section
+            qrCodeDiv.style.display = 'none';
+
+            // Also try to use WebRTC to detect IPs
+            getLocalIPs().then(ipAddresses => {
+                if (ipAddresses.length > 0) {
+                    const detectedIpDiv = document.createElement('div');
+                    detectedIpDiv.style.marginTop = '15px';
+                    detectedIpDiv.innerHTML = `<p><strong>Automatically detected IPs:</strong></p>`;
+
+                    const ipList = document.createElement('ul');
+                    ipAddresses.forEach(ip => {
+                        const port = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+                        const protocol = window.location.protocol;
+                        const path = window.location.pathname;
+                        const networkUrl = `${protocol}//${ip}:${port}${path}`;
+
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <code>${networkUrl}</code>
+                            <button class="copy-button" onclick="copyToClipboard('${networkUrl}')">Copy</button>
+                        `;
+                        ipList.appendChild(listItem);
+                    });
+
+                    detectedIpDiv.appendChild(ipList);
+                    ipAddressesDiv.appendChild(detectedIpDiv);
+                }
+            }).catch(() => {
+                // Ignore errors, just don't show detected IPs
+            });
+
+            // Load any previously saved manual IPs
+            const savedIps = JSON.parse(localStorage.getItem('manualIpAddresses')) || [];
+            savedIps.forEach(ip => {
+                addIpToList(ip);
+            });
+        }
+    }
+
+    // Function to add a manually entered IP
+    function addManualIp() {
+        const ipInput = document.getElementById('manualIpInput');
+        const ip = ipInput.value.trim();
+
+        if (!ip) return;
+
+        // Simple validation for IP format
+        if (!ip.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}$/)) {
+            alert('Please enter a valid IP address (e.g., 192.168.50.181)');
+            return;
+        }
+
+        // Add to UI
+        addIpToList(ip);
+
+        // Save to localStorage
+        const savedIps = JSON.parse(localStorage.getItem('manualIpAddresses')) || [];
+        if (!savedIps.includes(ip)) {
+            savedIps.push(ip);
+            localStorage.setItem('manualIpAddresses', JSON.stringify(savedIps));
+        }
+
+        // Clear input
+        ipInput.value = '';
+    }
+
+    // Function to add IP to the list in UI
+    function addIpToList(ip) {
+        const manualIpsDiv = document.getElementById('manualIps');
+        if (!manualIpsDiv) return; // Safety check
+
+        const port = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+        const protocol = window.location.protocol;
+        const path = window.location.pathname;
+        const networkUrl = `${protocol}//${ip}:${port}${path}`;
+
+        const ipDiv = document.createElement('div');
+        ipDiv.style.display = 'flex';
+        ipDiv.style.alignItems = 'center';
+        ipDiv.style.marginBottom = '5px';
+
+        ipDiv.innerHTML = `
+            <code style="flex-grow: 1;">${networkUrl}</code>
+            <button class="copy-button" onclick="copyToClipboard('${networkUrl}')">Copy</button>
+            <button class="delete-button" onclick="removeManualIp('${ip}')">Remove</button>
+        `;
+
+        manualIpsDiv.appendChild(ipDiv);
+    }
+
+    // Function to remove a manual IP
+    function removeManualIp(ip) {
+        // Remove from localStorage
+        const savedIps = JSON.parse(localStorage.getItem('manualIpAddresses')) || [];
+        const updatedIps = savedIps.filter(savedIp => savedIp !== ip);
+        localStorage.setItem('manualIpAddresses', JSON.stringify(updatedIps));
+
+        // Refresh display
+        const manualIpsDiv = document.getElementById('manualIps');
+        if (manualIpsDiv) {
+            manualIpsDiv.innerHTML = '';
+            updatedIps.forEach(ip => {
+                addIpToList(ip);
+            });
+        }
+    }
+
+    // Function to get local IP addresses using WebRTC (works in most browsers)
+    function getLocalIPs() {
+        return new Promise((resolve, reject) => {
+            // If running as a file:// URL, we can't detect IPs
+            if (window.location.protocol === 'file:') {
+                resolve([]);
+                return;
+            }
+
+            const ipAddresses = new Set();
+
+            // Create dummy RTCPeerConnection
+            const pc = new RTCPeerConnection({
+                iceServers: []
+            });
+
+            // Create data channel
+            pc.createDataChannel('');
+
+            // Set timeout
+            const timeout = setTimeout(() => {
+                resolve(Array.from(ipAddresses));
+            }, 1000);
+
+            // Listen for candidate events
+            pc.onicecandidate = (ice) => {
+                if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+
+                const regexResult = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(ice.candidate.candidate);
+                if (regexResult && regexResult[1]) {
+                    const ip = regexResult[1];
+                    // Only add local IPs (not STUN server responses)
+                    if (ip.match(/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|127\.)/)) {
+                        ipAddresses.add(ip);
+                    }
+                }
+
+                if (ipAddresses.size > 0) {
+                    clearTimeout(timeout);
+                    pc.close();
+                    resolve(Array.from(ipAddresses));
+                }
+            };
+
+            // Create an offer to connect
+            pc.createOffer()
+                .then(offer => pc.setLocalDescription(offer))
+                .catch(reject);
+        });
+    }
+
+    // Function to copy text to clipboard
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('URL copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert('URL copied to clipboard!');
+                } else {
+                    console.error('Failed to copy text with execCommand');
+                }
+            } catch (err) {
+                console.error('Failed to copy text with execCommand: ', err);
+            }
+
+            document.body.removeChild(textArea);
+        });
+    }
+
+    function createTestLink() {
+        const deeplink = document.getElementById('deeplinkInput').value.trim();
+        if (!deeplink) return;
+
+        const linkContainer = document.getElementById('linkContainer');
+        const qrContainer = document.getElementById('qrContainer');
+
+        linkContainer.innerHTML = '';
+        qrContainer.style.display = 'block';
+        qrContainer.innerHTML = '<h4>QR Code for this deeplink:</h4>';
+
+        // Create a clickable link
+        const linkElement = document.createElement('a');
+        linkElement.href = deeplink;
+        linkElement.textContent = deeplink;
+        linkElement.className = 'test-link';
+        linkElement.target = '_blank'; // Open in a new tab
+
+        linkContainer.appendChild(linkElement);
+
+        // Generate QR code for this deeplink
+        generateQRCode(qrContainer, deeplink, 300);
+
+        // Add a note about local generation
+        const noteElem = document.createElement('p');
+        noteElem.textContent = 'Scan this with your mobile device to open the deeplink';
+        noteElem.style.fontSize = '12px';
+        noteElem.style.color = '#666';
+        qrContainer.appendChild(noteElem);
+
+        // Add to history
+        if (!linkHistory.includes(deeplink)) {
+            linkHistory.unshift(deeplink);
+            // Keep only the last 10 items
+            if (linkHistory.length > 10) {
+                linkHistory.pop();
+            }
+            localStorage.setItem('deeplinkHistory', JSON.stringify(linkHistory));
+            updateHistory();
+        }
+    }
+
+    // Function to delete a deeplink from history
+    function deleteDeeplink(link) {
+        // Remove from the array
+        linkHistory = linkHistory.filter(item => item !== link);
+
+        // Update localStorage
+        localStorage.setItem('deeplinkHistory', JSON.stringify(linkHistory));
+
+        // Update the UI
+        updateHistory();
+    }
+
+    // Function to clear all history
+    function clearAllHistory() {
+        if (confirm('Are you sure you want to clear all deeplink history?')) {
+            linkHistory = [];
+            localStorage.setItem('deeplinkHistory', JSON.stringify(linkHistory));
+            updateHistory();
+        }
+    }
+
+    function updateHistory() {
+        const historyContainer = document.getElementById('history');
+        historyContainer.innerHTML = '';
+
+        if (linkHistory.length === 0) {
+            historyContainer.innerHTML = '<p>No recent links</p>';
+            return;
+        }
+
+        linkHistory.forEach(link => {
+            const itemContainer = document.createElement('div');
+            itemContainer.className = 'history-item';
+            itemContainer.style.marginBottom = '20px';
+            itemContainer.style.padding = '10px';
+            itemContainer.style.border = '1px solid #ddd';
+            itemContainer.style.borderRadius = '4px';
+
+            // Link element
+            const linkElement = document.createElement('a');
+            linkElement.href = link;
+            linkElement.textContent = link;
+            linkElement.className = 'test-link';
+            linkElement.target = '_blank';
+
+            // Create button controls
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'history-controls';
+
+            const useButton = document.createElement('button');
+            useButton.textContent = 'Use';
+            useButton.style.padding = '4px 8px';
+            useButton.onclick = function(e) {
+                e.preventDefault();
+                document.getElementById('deeplinkInput').value = link;
+                createTestLink();
+            };
+
+            const generateQRButton = document.createElement('button');
+            generateQRButton.textContent = 'Show QR Code';
+            generateQRButton.style.padding = '4px 8px';
+            generateQRButton.onclick = function(e) {
+                e.preventDefault();
+                toggleQRCode(itemContainer, link);
+            };
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'delete-button';
+            deleteButton.onclick = function(e) {
+                e.preventDefault();
+                deleteDeeplink(link);
+            };
+
+            // Append controls
+            controlsDiv.appendChild(useButton);
+            controlsDiv.appendChild(generateQRButton);
+            controlsDiv.appendChild(deleteButton);
+
+            // Create QR code container (hidden by default)
+            const qrCodeContainer = document.createElement('div');
+            qrCodeContainer.className = 'qr-container';
+            qrCodeContainer.style.display = 'none';
+            qrCodeContainer.style.marginTop = '10px';
+
+            // Append everything to item container
+            itemContainer.appendChild(linkElement);
+            itemContainer.appendChild(controlsDiv);
+            itemContainer.appendChild(qrCodeContainer);
+
+            // Add to history display
+            historyContainer.appendChild(itemContainer);
+        });
+    }
+
+    // Function to toggle QR code display for history items
+    function toggleQRCode(container, link) {
+        const qrCodeContainer = container.querySelector('.qr-container');
+
+        if (qrCodeContainer.style.display === 'none') {
+            // Generate and show QR code
+            qrCodeContainer.style.display = 'block';
+            qrCodeContainer.innerHTML = '';
+
+            // Generate QR code locally
+            generateQRCode(qrCodeContainer, link, 300);
+
+            // Add a note about local generation
+            const noteElem = document.createElement('p');
+            noteElem.textContent = 'Scan this with your mobile device to open the deeplink';
+            noteElem.style.fontSize = '12px';
+            noteElem.style.color = '#666';
+            qrCodeContainer.appendChild(noteElem);
+
+            // Change button text
+            const button = container.querySelector('button:nth-child(2)');
+            if (button) button.textContent = 'Hide QR Code';
+        } else {
+            // Hide QR code
+            qrCodeContainer.style.display = 'none';
+
+            // Change button text back
+            const button = container.querySelector('button:nth-child(2)');
+            if (button) button.textContent = 'Show QR Code';
+        }
+    }
+</script>
+</body>
+</html>
