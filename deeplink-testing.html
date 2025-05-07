@@ -231,9 +231,9 @@
             // Build manual IP entry form
             ipAddressesDiv.innerHTML = `
                 <div style="margin: 15px 0; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
-                    <p><strong>Enter your local IP address manually:</strong> (e.g., 192.168.50.181)</p>
+                    <p><strong>Enter your local IP address manually:</strong> (e.g., 192.168.1.100)</p>
                     <div style="display: flex; gap: 10px;">
-                        <input type="text" id="manualIpInput" placeholder="e.g., 192.168.50.181" style="flex-grow: 1;">
+                        <input type="text" id="manualIpInput" placeholder="e.g., 192.168.1.100" style="flex-grow: 1;">
                         <button onclick="addManualIp()">Add</button>
                     </div>
                     <div id="manualIps" style="margin-top: 10px;"></div>
@@ -290,7 +290,7 @@
 
         // Simple validation for IP format
         if (!ip.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}$/)) {
-            alert('Please enter a valid IP address (e.g., 192.168.50.181)');
+            alert('Please enter a valid IP address (e.g., 192.168.1.100)');
             return;
         }
 

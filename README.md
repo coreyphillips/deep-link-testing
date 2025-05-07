@@ -1,18 +1,20 @@
-# Deeplink Tester
+# Deeplink Testing Tool
 
-A simple HTML tool for testing deeplinks during development and QA.
+A simple yet powerful tool for testing deeplinks across devices during development and QA.
 
 ## Overview
 
-This lightweight HTML application allows you to quickly test deeplinks without having to manually paste them into your browser's address bar. The tool creates clickable links from your deeplinks and maintains a history of recently used links for faster iteration during testing.
+This lightweight HTML application allows you to quickly test deeplinks without manually pasting them into your browser's address bar. The tool creates clickable links from your deeplinks, generates QR codes for easy mobile testing, and maintains a history of recently used links for faster iteration during testing.
 
 ## Features
 
 - Create clickable deeplinks from any URL scheme
+- Generate QR codes for easy mobile device testing
 - Save history of recently used deeplinks
 - Quickly reuse previous deeplinks with one click
+- View QR codes for previously used deeplinks
 - Open links in new tabs for easy navigation back to the tester
-- Automatically displays local IP addresses for easy network access
+- Automatically detect and display local IP addresses for network access
 - Copy network URLs to clipboard with one click
 - No installation required - works with any modern web browser
 
@@ -22,7 +24,7 @@ This lightweight HTML application allows you to quickly test deeplinks without h
 
 For the easiest setup with automatic IP detection and display:
 
-1. Save both the `deeplink-tester.html` and `server.py` files to the same folder
+1. Save both the `deeplink-testing.html` and `server.py` files to the same folder
 2. Make the server script executable (on Mac/Linux):
    ```
    chmod +x server.py
@@ -32,55 +34,37 @@ For the easiest setup with automatic IP detection and display:
    python server.py
    ```
 4. The server will:
-   - Start automatically
+   - Start automatically on port 8000 (or specify a different port: `python server.py 8080`)
    - Display your network IP address prominently
    - Open a browser with the deeplink tester
    - Generate a QR code URL for easy mobile access
    - Show all available URLs for accessing the tool
 
-### Option 2: Standard Python HTTP Server
+### Option 2: Standard Web Browser (No Server)
 
-If you prefer to use the standard Python HTTP server:
+If you prefer to use the tool without a server:
 
-1. Save the `deeplink-tester.html` file to a folder on your computer
-2. Open a terminal/command prompt
-3. Navigate to the folder containing the HTML file:
-   ```
-   cd /path/to/folder
-   ```
-4. Start a Python HTTP server:
-
-   For Python 3:
-   ```
-   python -m http.server 8000
-   ```
-
-   For Python 2:
-   ```
-   python -m SimpleHTTPServer 8000
-   ```
-5. Access the tool in your browser at:
-   ```
-   http://localhost:8000/deeplink-tester.html
-   ```
-6. Use the manual IP entry in the tool to add your network IP
+1. Save the `deeplink-testing.html` file to your computer
+2. Open the file directly in your web browser
+3. The tool will run in browser mode and attempt to detect IP addresses using WebRTC
+4. You can manually enter your network IP address for sharing
 
 ## Usage Instructions
+
+### Testing Deeplinks
 
 1. Enter your deeplink in the input field (e.g., `myapp://path/to/screen`)
 2. Click "Create Test Link"
 3. Click on the generated link to test your deeplink
-4. Previous links appear in the "Recent Links" section for easy reuse
-5. Share the tool with other devices by using the network URLs displayed at the top of the page
-6. Use the "Copy" buttons to quickly copy network URLs to your clipboard
+4. A QR code will be generated for the deeplink
+5. Scan the QR code with a mobile device to test the deeplink on that device
 
 ## Troubleshooting
 
 - If other devices can't access your locally hosted server, check your firewall settings
 - Make sure your devices are on the same network
 - Some mobile OS restrictions may prevent certain deeplink formats from working
-
-## Notes
-
-- This tool uses localStorage to save your link history, which persists between browser sessions
-- The history is limited to the last 10 deeplinks to keep the interface clean
+- If you're having trouble with IP detection, use the manual IP entry option
+- To find your IP address:
+   - Mac/Linux: Run `ifconfig | grep inet` in Terminal
+   - Windows: Run `ipconfig` in Command Prompt
