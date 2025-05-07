@@ -6,6 +6,10 @@ A simple yet powerful tool for testing deeplinks across devices during developme
 
 This lightweight HTML application allows you to quickly test deeplinks without manually pasting them into your browser's address bar. The tool creates clickable links from your deeplinks, generates QR codes for easy mobile testing, and maintains a history of recently used links for faster iteration during testing.
 
+## Demo
+
+Try the tool now: [Deeplink Testing Tool Demo](https://htmlpreview.github.io/?https://github.com/coreyphillips/deep-link-testing/blob/main/deeplink-testing.html)
+
 ## Features
 
 - Create clickable deeplinks from any URL scheme
@@ -34,11 +38,11 @@ For the easiest setup with automatic IP detection and display:
    python server.py
    ```
 4. The server will:
-   - Start automatically on port 8000 (or specify a different port: `python server.py 8080`)
-   - Display your network IP address prominently
-   - Open a browser with the deeplink tester
-   - Generate a QR code URL for easy mobile access
-   - Show all available URLs for accessing the tool
+    - Start automatically on port 8000 (or specify a different port: `python server.py 8080`)
+    - Display your network IP address prominently
+    - Open a browser with the deeplink tester
+    - Generate a QR code URL for easy mobile access
+    - Show all available URLs for accessing the tool
 
 ### Option 2: Standard Web Browser (No Server)
 
@@ -66,5 +70,5 @@ If you prefer to use the tool without a server:
 - Some mobile OS restrictions may prevent certain deeplink formats from working
 - If you're having trouble with IP detection, use the manual IP entry option
 - To find your IP address:
-   - Mac/Linux: Run `ifconfig | grep inet` in Terminal
-   - Windows: Run `ipconfig` in Command Prompt
+    - Mac/Linux: Run `ifconfig | grep inet` in Terminal
+    - Windows: Run `ipconfig` in Command Prompt
