@@ -6,6 +6,10 @@ A simple tool for testing deeplinks across devices during development and QA.
 
 This lightweight HTML application allows you to quickly test deeplinks without manually pasting them into your browser's address bar. The tool creates clickable links from your deeplinks, generates QR codes for easy mobile testing, and maintains a history of recently used links for faster iteration during testing.
 
+## Demo
+
+Try the tool now: [Deeplink Testing Tool Demo](https://coreyphillips.github.io/deep-link-testing/)
+
 ## Features
 
 - Create clickable deeplinks from any URL scheme
