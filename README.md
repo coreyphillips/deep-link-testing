@@ -24,7 +24,7 @@ This lightweight HTML application allows you to quickly test deeplinks without m
 
 For the easiest setup with automatic IP detection and display:
 
-1. Save both the `deeplink-testing.html` and `server.py` files to the same folder
+1. Save both the `index.html` and `server.py` files to the same folder
 2. Run the server:
    ```
    python server.py
@@ -40,7 +40,7 @@ For the easiest setup with automatic IP detection and display:
 
 If you prefer to use the tool without a server:
 
-1. Save the `deeplink-testing.html` file to your computer
+1. Save the `index.html` file to your computer
 2. Open the file directly in your web browser
 3. The tool will run in browser mode and attempt to detect IP addresses using WebRTC
 4. You can manually enter your network IP address for sharing

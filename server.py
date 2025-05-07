@@ -49,15 +49,15 @@ class DeeplinkServerHandler(SimpleHTTPRequestHandler):
         if self.path == "/favicon.ico":
             return super().do_GET()
 
-        # For deeplink-testing.html, inject the network info
-        if self.path == "/deeplink-testing.html" or (self.path == "/" and os.path.exists(os.path.join(os.getcwd(), "deeplink-testing.html"))):
+        # For index.html, inject the network info
+        if self.path == "/index.html" or (self.path == "/" and os.path.exists(os.path.join(os.getcwd(), "index.html"))):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
 
             # Get the file content
             if self.path == "/":
-                file_path = os.path.join(os.getcwd(), "deeplink-testing.html")
+                file_path = os.path.join(os.getcwd(), "index.html")
             else:
                 file_path = os.path.join(os.getcwd(), self.path.lstrip("/"))
 
@@ -117,7 +117,7 @@ def run_server(port):
             raise
 
     # Check if the deeplink testing file exists
-    filename = "deeplink-testing.html"
+    filename = "index.html"
     if os.path.exists(os.path.join(directory, filename)):
         path = f"/{filename}"
     else:
